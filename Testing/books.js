@@ -8,13 +8,14 @@ const scrape = async () => {
   const allBooks = [];
   let currentPage = 1;
   const maxPages = 50;
+  const baseUrl = "https://books.toscrape.com/";
 
   while (currentPage <= maxPages) {
     const url = `https://books.toscrape.com/catalogue/page-${currentPage}.html`;
 
     await page.goto(url);
 
-    const books = await page.evaluate(() => {
+    const books = await page.evaluate((baseUrl) => {
       const bookElements = document.querySelectorAll(".product_pod");
       return Array.from(bookElements).map((book) => {
         const title = book.querySelector("h3 a").getAttribute("title");
@@ -27,8 +28,9 @@ const scrape = async () => {
           .className.split(" ")[1];
         const link = book.querySelector("h3 a").getAttribute("href");
         const img_Url =
-          book.querySelector(".image_container img")?.getAttribute("src") ||
-          "No Image";
+          baseUrl +
+          (book.querySelector(".image_container img")?.getAttribute("src") ||
+            "No Image");
 
         return {
           title,
@@ -39,14 +41,14 @@ const scrape = async () => {
           img_Url,
         };
       });
-    });
+    }, baseUrl);
 
     allBooks.push(...books);
     console.log(`Books on page ${currentPage}: `, books);
     currentPage++;
   }
 
-  fs.writeFileSync("data.json", JSON.stringify(allBooks, null, 2));
+  fs.writeFileSync("books.json", JSON.stringify(allBooks, null, 2));
 
   console.log("Data saved to books.json");
 

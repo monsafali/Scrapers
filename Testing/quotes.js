@@ -107,7 +107,7 @@ const scrape = async () => {
   );
 
   const allBooks = [];
-  const maxPages = 100; // Reduce the number of pages for simplicity
+  const maxPages = 50; // Reduce the number of pages for simplicity
 
   for (let currentPage = 1; currentPage <= maxPages; currentPage++) {
     const url = `https://www.goodreads.com/quotes?page=${currentPage}`;
