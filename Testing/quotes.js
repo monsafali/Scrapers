@@ -34,7 +34,7 @@ const scrape = async () => {
     const url = `https://www.goodreads.com/quotes?page=${currentPage}`;
 
     try {
-      await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
+      await page.goto(url, { waitUntilprogressData: "networkidle2", timeout: 60000 });
       await page.waitForSelector(".quote", { timeout: 15000 });
     } catch (err) {
       console.error(`Failed to load page ${currentPage}:`, err);
