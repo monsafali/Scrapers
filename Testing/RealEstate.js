@@ -26,64 +26,80 @@ import puppeteer from "puppeteer";
   );
   Search_Document.click();
 
-  const DateIcon = await page.waitForSelector(
-    '::-p-xpath(//*[@id="cphNoMargin_tdSearch"]/table[1]/tbody/tr[3]/td[5]/img)'
+  // Calculate dates
+  const today = new Date();
+  const fourMonthsAgo = new Date();
+  fourMonthsAgo.setMonth(today.getMonth() - 4);
+
+  const formatDate = (date) => {
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    const yyyy = date.getFullYear();
+    return `${mm}/${dd}/${yyyy}`;
+  };
+
+  const dateFrom = formatDate(fourMonthsAgo);
+  const dateTo = formatDate(today);
+
+  // Wait for Date Filed From input and set value
+  await page.waitForSelector(
+    "#cphNoMargin_f_ddcDateFiledFrom input[type='text']"
   );
-  DateIcon.click();
+  await page.evaluate((date) => {
+    document.querySelector(
+      "#cphNoMargin_f_ddcDateFiledFrom input[type='text']"
+    ).value = date;
+  }, dateFrom);
 
-  const Today = await page.waitForSelector(
-    '::-p-xpath(//*[@id="cphNoMargin_tdSearch"]/table[1]/tbody/tr[3]/td[5]/img)'
+  // Wait for Date Filed To input and set value
+  await page.waitForSelector(
+    "#cphNoMargin_f_ddcDateFiledTo input[type='text']"
   );
-  // Today.click();
+  await page.evaluate((date) => {
+    document.querySelector(
+      "#cphNoMargin_f_ddcDateFiledTo input[type='text']"
+    ).value = date;
+  }, dateTo);
 
-  // Aproached nO 2
-  //******************************************** */
+  // console.log(`Date Filed From: ${dateFrom}`);
+  // console.log(`Date Filed To: ${dateTo}`);
 
-  const First_check = await page.$("#cphNoMargin_f_dclDocType_0");
-  First_check.click();
-  const Second_check = await page.$("#cphNoMargin_f_dclDocType_1");
-  Second_check.click();
-
-  const third_check = await page.$("#cphNoMargin_f_dclDocType_2");
-  third_check.click();
-
-  const fourt_check = await page.$("#cphNoMargin_f_dclDocType_3");
-  fourt_check.click();
-
-  const five_check = await page.$("#cphNoMargin_f_dclDocType_5");
-  five_check.click();
-
-  const six_check = await page.$("#cphNoMargin_f_dclDocType_6");
-  six_check.click();
-
-  const seven_check = await page.$("#cphNoMargin_f_dclDocType_7");
-  seven_check.click();
+  // Check Checkbhoxes
+  for (let i = 0; i <= 7; i++) {
+    // Skip 4 as it's not part of the sequence in your example
+    const checkbox = await page.$(`#cphNoMargin_f_dclDocType_${i}`);
+    await checkbox.click();
+  }
 
   // Search
   const searchBtn = await page.$("#cphNoMargin_SearchButtons2_btnSearch__3");
   searchBtn.click();
 
-  // Next Page
-  try {
-    const getDocument = await page.waitForSelector(
-      '::-p-xpath(//*[@id="ctl00_ctl00_cphNoMargin_cphNoMargin_g_G1_ctl00"]/table/tbody/tr[2]/td/table/tbody[2]/tr/td/div[2]/table/tbody/tr[2]/td[2]/div)'
-    );
-    getDocument.click();
-  } catch {
-    console.log("get error document not their exit");
+  // Step 2: Interact with the elements having the specific class and click on them one by one
+  const links = await page.$$(".staticLink.centeredCell.imageCell");
+  for (let i = 0; i < links.length; i++) {
+    console.log(`Clicking on element ${i + 1}`);
+
+    // Click the link to open the next page
+    await links[i].click();
+    await page.waitForNavigation({ waitUntil: "networkidle2" });
+
+    // Step 3: On the redirected page, select specific pages (Page 1, Page 2, Page 3)
+    for (let pageIndex = 0; pageIndex < 3; pageIndex++) {
+      const checkboxSelector = `#pageList_${pageIndex}`;
+      await page.click("#rdoSelectPages"); // Select the "Selected Pages" option
+      await page.click(checkboxSelector); // Check the specific page checkbox
+    }
+
+    // Step 4: Click the "Get Image Now" button
+    const getImageNowButton = "#btnProcessNow";
+    await page.click(getImageNowButton);
+
+    // Wait for the process to complete (e.g., download or page update)
+    await page.waitForTimeout(3000); // Adjust timeout as per the website's response time
+
+    // Step 5: Navigate back to the search results for the next link
+    await page.goBack({ waitUntil: "networkidle2" });
   }
-  // Next Dioalog Open
-  // const F_page = await page.$("#pageList_1");
-  // F_page.click();
-  // const S_page = await page.$("#pageList_2");
-  // S_page.click();
-  // const T_page = await page.$("#pageList_3");
-  // T_page.click();
-
-  // btnProcessNow__3
-
-  // const btnProcessNow = await page.$("# btnProcessNow__3");
-  // btnProcessNow.click();
-
   // await browser.close();
 })();
